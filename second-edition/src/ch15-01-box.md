@@ -1,9 +1,47 @@
 ## `Box<T>` Points to Data on the Heap and Has a Known Size
 
 The most straightforward smart pointer is a *box*, whose type is written
-`Box<T>`. Boxes allow you to put a single value on the heap (we talked about
-the stack vs. the heap in Chapter 4). Listing 15-1 shows how to use a box to
-store an `i32` on the heap:
+`Box<T>`. Boxes allow you to store a value on the heap rather than the stack.
+The box data consisting of the pointer to the heap will be stored on the stack.
+Refer back to Chapter 4 if you'd like to review the difference between the
+stack and the heap.
+
+<!-- do we mean, allows you to place a value on the heap rather than the
+default behavior of placing it on the stack? Can you quickly recap on what the
+advantage to this can be, help them know when they'd use this? -->
+<!-- Correct! Recap below: /Carol -->
+
+Boxes don't have a lot of performance overhead, but they don't have a lot of
+extra abilities either. They're most often used in these situations:
+
+- When you have a large amount of data and you want to transfer ownership but
+  ensure the data won't be copied when you do so
+- When you have a type whose size can't be known at compile time, and you want
+  to use a value of that type in a context that needs to know an exact size
+- When you want to own a value and only care that it's a type that implements a
+  particular trait rather than knowing the concrete type itself
+
+In the first case when you have a lot of data that you don't want to be copied
+when you move the value to be owned by another part of code, boxes make it so
+that the data stays in one place on the heap and only the pointer data in the
+box is copied around on the stack. We'll take a look at an example in a bit.
+
+An example of the second case, a type whose size can't be known at compile
+time, is a *recursive type* where a value can have as part of itself another
+value of the same type. This nesting of values could theoretically continue
+infinitely. Rust figures out at compile time how much space a type takes up, so
+Rust won't let you make a recursive type directly since it's not sure how much
+space between no space and infinite space you're going to need. Boxes have a
+known size, however, so by inserting a box in a recursive type definition, we
+are allowed to have recursive types. We'll be exploring the `Cons` list, a data
+type common in functional programming languages, to illustrate this concept.
+
+The third case is known as a *trait object*, and Chapter 17 has an entire
+section devoted just to that topic. So know that what you learn here will be
+applied again in Chapter 17!
+
+
+Listing 15-1 shows how to use a box to store an `i32` on the heap:
 
 <span class="filename">Filename: src/main.rs</span>
 
